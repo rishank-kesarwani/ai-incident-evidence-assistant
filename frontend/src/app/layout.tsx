@@ -8,8 +8,11 @@ export const metadata: Metadata = {
   description:
     'AI-assisted incident investigation platform correlating sanitized logs, traces, deployment events, and runbooks into evidence-linked timelines and operator-approved remediation plans.',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
     apple: '/icon.svg',
   },
   manifest: '/site.webmanifest',

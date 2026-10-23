@@ -26,6 +26,7 @@
     - [Frontend on Vercel](#frontend-on-vercel)
 12. [Deployment Smoke-Test Checklist](#12-deployment-smoke-test-checklist)
 13. [Troubleshooting](#13-troubleshooting)
+14. [Image Optimization & Vercel Transformation Cost Reduction](#14-image-optimization--vercel-transformation-cost-reduction)
 
 ---
 
@@ -339,5 +340,77 @@ After deploying, verify the following checks:
 
 ---
 
+## 14. Image Optimization & Vercel Transformation Cost Reduction
+
+### Overview
+Vercel includes an allowance of **5,000 image transformations per month**. Standard Next.js defaults can rapidly exhaust this quota due to:
+- Transforming vector SVGs or small brand icons repeatedly.
+- Generating excessive responsive permutations across 8 device sizes and 8 image sizes (up to 16 variants per image).
+- Default 60-second edge cache lifetimes (`minimumCacheTTL: 60`), causing edge re-transformations.
+- Multi-format output generating separate AVIF and WebP files for the same source.
+- Broken image boxes occurring when transformation quotas are reached (Vercel returning HTTP 402/500).
+
+This repository implements a **Zero-Transformation Strategy** for vector graphics and UI elements, paired with aggressive edge caching and fail-safe fallback boundaries.
+
+### Architectural Decisions
+
+| Area | Default Next.js Setting | Hardened Configuration | Quota & Performance Impact |
+| :--- | :--- | :--- | :--- |
+| **Vector SVGs & UI Icons** | Routed through `/_next/image` if `dangerouslyAllowSVG` is enabled | `unoptimized: true` on `<OptimizedImage>` & `<Logo>` + `dangerouslyAllowSVG: false` | **100% of SVG transformations eliminated** (0 transformations consumed). Served statically via CDN. |
+| **Output Formats** | Generates both AVIF and WebP | `formats: ['image/webp']` | **Halves transformation footprint** on any raster images while preserving 95%+ compression gains. |
+| **Edge Cache TTL** | `minimumCacheTTL: 60` (60 seconds) | `minimumCacheTTL: 2678400` (31 days) | Prevents edge re-transformations every minute; maximizes Vercel Edge CDN cache hit ratio. |
+| **Responsive Permutations** | 16 breakpoints: 8 `deviceSizes` + 8 `imageSizes` | 4 `deviceSizes` (`[640, 768, 1080, 1920]`) + 6 `imageSizes` (`[16, 32, 48, 64, 128, 256]`) | **Removes redundant widths** (750, 828, 1200, 2048, 3840), preventing duplicate transformation permutations. |
+| **Static Cache Headers** | `must-revalidate` default | `Cache-Control: public, max-age=2592000, stale-while-revalidate=86400` (30 days) | Browsers and CDNs cache static icons, logos, and webp assets for 30 days. |
+| **Broken Image Protection** | Browser broken image placeholder if quota exhausted | Automatic inline vector SVG fallback in `<Logo>` & error boundary in `<OptimizedImage>` | **Zero broken images** even if Vercel image transformation limit is reached. |
+
+### Component Guidelines
+
+#### 1. Brand Logo (`Logo.tsx`)
+Always use the `<Logo>` component for navbar, headers, and login screens. It serves pre-optimized `/logo.webp` (or `/icon.svg`) directly with `unoptimized={true}`, `priority={true}` for LCP optimization, and incorporates an inline SVG fallback in case of edge or network errors.
+
+```tsx
+import Logo from '@/components/Logo';
+
+// Navbar usage
+<Logo size={24} showText={true} />
+
+// Login card usage
+<Logo size={48} />
+```
+
+#### 2. General Images (`OptimizedImage.tsx`)
+Use `<OptimizedImage>` as a drop-in replacement for `next/image`. It automatically detects SVGs and small thumbnails (width & height ≤ 64px) and sets `unoptimized={true}` unless `forceOptimize={true}` is explicitly declared.
+
+```tsx
+import OptimizedImage from '@/components/OptimizedImage';
+
+// Automatically unoptimized (0 transformations consumed)
+<OptimizedImage
+  src="/icon.svg"
+  alt="System Health"
+  width={32}
+  height={32}
+/>
+
+// For large photography/diagrams where responsive resizing is beneficial:
+<OptimizedImage
+  src="/diagrams/architecture.png"
+  alt="Architecture Diagram"
+  width={1200}
+  height={675}
+  forceOptimize={true}
+  sizes="(max-width: 768px) 100vw, 1200px"
+/>
+```
+
+### Adding New Image Assets
+1. **Prefer Vector SVGs or Inline React Icons**: Use `lucide-react` for standard UI iconography.
+2. **Pre-optimize Raster Assets**: Convert large PNGs to WebP before committing using `cwebp` or Pillow (`img.save('asset.webp', format='WEBP', quality=85)`).
+3. **Always Set `unoptimized={true}` for Thumbnails**: Any asset under 128px does not benefit from dynamic Vercel resizing.
+4. **Define Explicit Dimensions**: Provide `width` and `height` to prevent Cumulative Layout Shift (CLS).
+
+---
+
 ## License
 MIT © 2026 Rishank Kesarwani
+

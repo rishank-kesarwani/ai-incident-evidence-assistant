@@ -18,6 +18,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+import Logo from './Logo';
+
 export default function NavigationBar() {
   const pathname = usePathname();
   const { user, publicAccessEnabled, logout } = useAuth();
@@ -42,14 +44,8 @@ export default function NavigationBar() {
 
   return (
     <header className="navbar">
-      <Link href="/" className="nav-brand">
-        <div className="nav-brand-logo">
-          <Shield size={18} color="#ffffff" />
-        </div>
-        <div>
-          <span style={{ color: '#ffffff' }}>Incident</span>
-          <span style={{ color: '#38bdf8' }}>Assistant</span>
-        </div>
+      <Link href="/" className="nav-brand" style={{ display: 'inline-flex', alignItems: 'center' }}>
+        <Logo size={24} showText={true} />
       </Link>
 
       <nav className="nav-links">

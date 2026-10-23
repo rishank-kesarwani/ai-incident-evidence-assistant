@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth-context';
 import { Lock, LogIn, Shield, User } from 'lucide-react';
 import Link from 'next/link';
+import Logo from '../../components/Logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,18 +41,13 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
-              color: 'var(--accent-cyan)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 12px',
             }}
           >
-            <Shield size={24} />
+            <Logo size={48} />
           </div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Operator Sign In</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>
