@@ -1,0 +1,23 @@
+{
+  "name": "ai-incident-evidence-assistant",
+  "version": "1.0.0",
+  "description": "AI-assisted incident investigation platform correlating sanitized logs, traces, deployment events, and runbooks with approval-gated remediation",
+  "author": "Rishank Kesarwani",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "npm run start:backend",
+    "start:backend": "cd backend && npm run start:dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "start:prod": "cd backend && npm run start:prod",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint"
+  }
+}
