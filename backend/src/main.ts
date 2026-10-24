@@ -28,9 +28,9 @@ async function bootstrap() {
       'Content-Type, Accept, Authorization, x-api-key, x-correlation-id, x-request-id',
   });
 
-  // Global API prefix with health endpoint exclusion
+  // Global API prefix with root and health endpoint exclusion
   app.setGlobalPrefix(apiPrefix, {
-    exclude: ['health', 'health/ready', 'health/live'],
+    exclude: ['/', '', 'health', 'health/ready', 'health/live'],
   });
 
   // Strict validation pipe with auto-transform

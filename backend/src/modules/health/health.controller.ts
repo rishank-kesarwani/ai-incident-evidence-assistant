@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Head, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from '../../common/decorators';
 import { DatabaseService } from '../database/database.service';
@@ -13,6 +13,33 @@ export class HealthController {
     private readonly redisAdapter: RedisAdapter,
     private readonly configService: ConfigService,
   ) {}
+
+  @IsPublic()
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Root service discovery and status' })
+  @ApiResponse({ status: 200, description: 'Service information and status' })
+  getRoot() {
+    return {
+      status: 'UP',
+      application: 'AI Incident Evidence & Runbook Assistant Backend API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      docs: '/docs',
+      health: '/health',
+      apiPrefix: `/${this.configService.get<string>('apiPrefix') || 'api/v1'}`,
+      publicAccessEnabled: this.configService.get<boolean>('publicAccessEnabled') ?? false,
+    };
+  }
+
+  @IsPublic()
+  @Head()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Root service ping' })
+  @ApiResponse({ status: 200, description: 'Service is responding to HEAD requests' })
+  headRoot() {
+    return;
+  }
 
   @IsPublic()
   @Get('health')

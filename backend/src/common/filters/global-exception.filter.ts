@@ -44,10 +44,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const correlationId = request.headers['x-correlation-id'] || 'none';
 
     // Log error with correlation context (avoiding secret leakage)
-    this.logger.error(
-      `[${correlationId}] ${request.method} ${request.url} failed with status ${status}: ${message}`,
-      exception instanceof Error ? exception.stack : undefined,
-    );
+    if (status >= 500) {
+      this.logger.error(
+        `[${correlationId}] ${request.method} ${request.url} failed with status ${status}: ${message}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    } else {
+      this.logger.warn(
+        `[${correlationId}] ${request.method} ${request.url} failed with status ${status}: ${message}`,
+      );
+    }
 
     response.status(status).json({
       statusCode: status,
